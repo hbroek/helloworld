@@ -1,0 +1,36 @@
+<svg width="505" height="145" viewBox="0 0 505 145" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="505" height="145" rx="20" fill="#F5F5F5"/>
+  
+  <!-- Main Text "Hello" -->
+  <text x="10" y="85" 
+        font-family="Arial, Helvetica, sans-serif" 
+        font-size="72" 
+        font-weight="bold" 
+        fill="#2E75B6">
+    Hello
+  </text>
+  
+  <!-- Main Text "World" -->
+  <text x="225" y="85" 
+        font-family="Arial, Helvetica, sans-serif" 
+        font-size="72" 
+        font-weight="bold" 
+        fill="#2E75B6">
+    World
+  </text>
+  
+  <!-- Decorative accent line -->
+  <line x1="50" y1="105" x2="140" y2="105" stroke="#2E75B6" stroke-width="4" stroke-linecap="round"/>
+  <line x1="265" y1="105" x2="355" y2="105" stroke="#ED8936" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Small globe icon (simple rings) -->
+  <path d="M170 60 C190 10,220 10,240 60 C245 60,255 60,245 65 C235 70,220 80,200 90 C220 100,235 110,245 115 C255 120,245 125,235 120 C225 115,210 105,190 100 C210 110,225 120,245 125 C255 130,245 125,235 120 C225 115,210 105,190 100 C210 110,205 115,195 120 C185 125,175 120,165 120" 
+        stroke="#2E75B6" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <circle cx="175" cy="60" r="5" fill="#2E75B6"/>
+  <circle cx="245" cy="60" r="5" fill="#ED8936"/>
+  
+  <!-- Small decorative dots -->
+  <circle cx="100" cy="25" r="3" fill="#2E75B6" opacity="0.7"/>
+  <circle cx="300" cy="25" r="3" fill="#ED8936" opacity="0.7"/>
+</svg>
