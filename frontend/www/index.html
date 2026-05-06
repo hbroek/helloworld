@@ -6,25 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Open Graph / Facebook / LinkedIn -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://example.com/helloworld.html">
+  <meta property="og:url" content="https://example.com/index.html">
   <meta property="og:title" content="Hello World Page">
   <meta property="og:description" content="Welcome to Hello World! Enter your name and see a personalized greeting.">
-  <meta property="og:image" content="/frontend/www/helloworld_logo.svg">
+  <meta property="og:image" content="/helloworld_logo.svg">
   <meta property="og:site_name" content="Continue Test">
   <meta property="og:locale" content="en_US">
   
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://example.com/helloworld.html">
+  <meta name="twitter:url" content="https://example.com/index.html">
   <meta name="twitter:title" content="Hello World Page">
   <meta name="twitter:description" content="Welcome to Hello World! Enter your name and see a personalized greeting.">
-  <meta name="twitter:image" content="/frontend/www/helloworld_logo.svg">
+  <meta name="twitter:image" content="/helloworld_logo.svg">
 </head>
 
 <body>
   <!-- SVG Logo in Header -->
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center; margin-bottom: 20px;">
-    <img src="/frontend/www/helloworld_logo.svg" alt="Hello World Logo" width="300" style="background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+  <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 55%, #c2410c 100%); padding: 20px; text-align: center; margin-bottom: 20px;">
+    <img src="/helloworld_logo.svg" alt="Hello World Logo" width="300" style="background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
     <h1 style="color: white; margin: 10px 0 0 0;">Name Generator App</h1>
   </div>
 
@@ -33,19 +33,22 @@
   <div style="display: flex; gap: 10px; align-items: center; margin: 15px 0;">
     <input type="text" id="nameInput" placeholder="Enter your name" />
     <button onclick="updateHello()">Click Me!</button>
-    <button onclick="getRandomName()" style="background-color: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">
-      🎲 Get Random Name
-    </button>
   </div>
-  <p style="font-size: 0.9em; color: #666; margin: 10px 0;"></p>
+  <p style="font-size: 0.9em; color: #666; margin: 10px 0;">Press Enter to trigger</p>
   <script>
     // API endpoint
     const API_BASE = '/api/v1';
-    const nameAPI = '/name-generator';
+    const nameAPI = `${API_BASE}/name-generator`;
     
-    // Get random name
-    function getRandomName() {
-      fetch(nameAPI).then(res => res.json()).then(data => {
+    // Get random name from API
+    async function fetchRandomName() {
+      try {
+        const response = await fetch(nameAPI);
+        if (!response.ok) {
+          throw new Error('API request failed');
+        }
+        const data = await response.json();
+        
         const h1 = document.querySelector('h1');
         const greetingSpan = document.querySelector('span#greeting');
         const nameElement = document.querySelector('#nameInput');
@@ -53,19 +56,19 @@
         nameElement.value = data.name;
         greetingSpan.textContent = data.name;
         h1.textContent = `Hello, "${data.name}"`;
-      }).catch(err => {
-        console.error('Error fetching random name:', err);
-      });
+      } catch (error) {
+        console.error('Error fetching random name:', error);
+      }
     }
     
-    // Main function - gets random name if input is empty
+    // Main function - only update with input, calls API if empty
     function updateHello() {
       const nameInput = document.getElementById('nameInput');
       const name = nameInput.value.trim();
       
       if (name === '' || name === null) {
         // Input is empty - get random name from API
-        getRandomName();
+        fetchRandomName();
       } else {
         // Use the entered name
         const greetingSpan = document.querySelector('span#greeting');
@@ -73,11 +76,6 @@
         greetingSpan.textContent = name;
         h1.textContent = `Hello, "${name}"`;
       }
-    }
-    
-    // Random name button
-    function getRandomName() {
-      getRandomName();
     }
     
     // Allow Enter key to trigger update
@@ -88,4 +86,5 @@
     });
   </script>
 </body>
+
 </html>
