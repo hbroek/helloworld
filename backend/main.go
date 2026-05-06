@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -54,22 +55,18 @@ func main() {
 }
 
 func nameGenerator(w http.ResponseWriter, r *http.Request) {
-	gender := r.URL.Query().Get("gender")
+	genderParam := strings.TrimSpace(r.URL.Query().Get("gender"))
 
+	// Determine which names list to use
 	var names []string
-	selectGender := gender
 
-	if selectGender == "boy" {
+	if genderParam == "boy" {
 		names = boyNames
-	} else if selectGender == "girl" {
+	} else if genderParam == "girl" {
 		names = girlNames
 	} else {
-		// Default: random gender
-		if rand.Intn(2) == 0 {
-			names = boyNames
-		} else {
-			names = girlNames
-		}
+		// Default: pick from any list
+		names = boyNames
 	}
 
 	if len(names) == 0 {
@@ -80,15 +77,14 @@ func nameGenerator(w http.ResponseWriter, r *http.Request) {
 	idx := rand.Intn(len(names))
 	name := names[idx]
 
-	if selectGender == "" {
-		selectGender = "boy" // Will be set based on actual name
-	}
+	// Determine the actual gender of the returned name
+	actualGender := detectGender(name)
 
 	response := map[string]interface{}{
 		"name":    name,
-		"gender":  selectGender,
+		"gender":  actualGender,
 		"total":   len(names),
-		"message": getRandomMessage(selectGender),
+		"message": getResponseMessage(genderParam, actualGender),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -96,9 +92,27 @@ func nameGenerator(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func getRandomMessage(gender string) string {
-	if r := rand.Intn(2); r == 0 {
-		return "Random name"
+func detectGender(name string) string {
+	boyNames := []string{
+		"Liam", "Noah", "Oliver", "Elijah", "William", "James", "Benjamin", "Lucas", "Henry", "Theodore",
+		"Alexander", "Michael", "Daniel", "Matthew", "Sebastian", "Jack", "Jayden", "John", "David", "Samuel",
 	}
-	return fmt.Sprintf("Random %s name", gender)
+	
+	for _, b := range boyNames {
+		if b == name {
+			return "boy"
+		}
+	}
+	
+	return "girl" // All others are girl names
+}
+
+func getResponseMessage(requestedGender, actualGender string) string {
+	if requestedGender == "" {
+		return fmt.Sprintf("Random %s name", actualGender)
+	}
+	if requestedGender == actualGender {
+		return fmt.Sprintf("%s name", requestedGender)
+	}
+	return fmt.Sprintf("Random %s name (requested: %s)", actualGender, requestedGender)
 }
