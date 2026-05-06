@@ -1,16 +1,15 @@
 package main
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
-	"strings"
+	"time"
 )
 
-// Random boy and girl names
 var boyNames = []string{
 	"Liam", "Noah", "Oliver", "Elijah", "William", "James", "Benjamin", "Lucas", "Henry", "Theodore",
 	"Alexander", "Michael", "Daniel", "Matthew", "Sebastian", "Jack", "Jayden", "John", "David", "Samuel",
@@ -21,91 +20,85 @@ var girlNames = []string{
 	"Camila", "Harper", "Evelyn", "Abigail", "Emily", "Elizabeth", "Sofia", "Mila", "Samantha", "Layla",
 }
 
-// Name API endpoint
-func nameGenerator(w http.ResponseWriter, r *http.Request) {
-	gender := strings.TrimSpace(r.URL.Query().Get("gender"))
-	
-	if gender == "" {
-		gender = "" // Default: pick any
-	}
-	
-	switch {
-	case gender == "boy":
-		idx := rand.Intn(len(boyNames))
-		response := map[string]interface{}{
-			"name":  boyNames[idx],
-			"gender": "boy",
-			"total": len(boyNames),
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
-		
-	case gender == "girl":
-		idx := rand.Intn(len(girlNames))
-		response := map[string]interface{}{
-			"name":  girlNames[idx],
-			"gender": "girl",
-			"total": len(girlNames),
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
-	
-	default:
-		// Default: random boy or girl
-		if rand.Intn(2) == 0 {
-			idx := rand.Intn(len(boyNames))
-			response := map[string]interface{}{
-				"name":  boyNames[idx],
-				"gender": "boy",
-				"total": len(boyNames) + len(girlNames),
-			}
-		} else {
-			idx := rand.Intn(len(girlNames))
-			response := map[string]interface{}{
-				"name":  girlNames[idx],
-				"gender": "girl",
-				"total": len(boyNames) + len(girlNames),
-			}
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
-	}
-}
-
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	// Serve from frontend/www (relative to the backend folder)
 	publicDir := "frontend/www"
-	
-	// Create a custom mux
+
 	mux := http.NewServeMux()
-	
-	// Register static files for the public directory
-	mux.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(publicDir))))
-	
-	// Register health endpoint
+
+	// Health endpoint
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK\n"))
 	})
-	
-	// Register name generator API
+
+	// Name generator API
 	mux.HandleFunc("/api/v1/name-generator", nameGenerator)
-	
+
+	// Static files - serve www/ directory
+	mux.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(publicDir))))
+
 	fmt.Printf("Starting server on port %s\n", port)
 	fmt.Printf("Serving content from: %s\n", publicDir)
 	fmt.Printf("Visit: http://localhost:%s\n", port)
-	fmt.Printf("API: http://localhost:%s/api/v1/name-generator\n", port)
-	
+
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func nameGenerator(w http.ResponseWriter, r *http.Request) {
+	gender := r.URL.Query().Get("gender")
+
+	var names []string
+	selectGender := gender
+
+	if selectGender == "boy" {
+		names = boyNames
+	} else if selectGender == "girl" {
+		names = girlNames
+	} else {
+		// Default: random gender
+		if rand.Intn(2) == 0 {
+			names = boyNames
+		} else {
+			names = girlNames
+		}
+	}
+
+	if len(names) == 0 {
+		w.WriteHeader(http.StatusBadGateway)
+		return
+	}
+
+	idx := rand.Intn(len(names))
+	name := names[idx]
+
+	if selectGender == "" {
+		selectGender = "boy" // Will be set based on actual name
+	}
+
+	response := map[string]interface{}{
+		"name":    name,
+		"gender":  selectGender,
+		"total":   len(names),
+		"message": getRandomMessage(selectGender),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+func getRandomMessage(gender string) string {
+	if r := rand.Intn(2); r == 0 {
+		return "Random name"
+	}
+	return fmt.Sprintf("Random %s name", gender)
 }
