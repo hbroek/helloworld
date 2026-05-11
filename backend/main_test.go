@@ -24,10 +24,7 @@ func TestHealthEndpoint(t *testing.T) {
 }
 
 func TestNameGeneratorReturnsRequestedBoyName(t *testing.T) {
-	restoreRandom := stubRandomIntn(t, 1)
-	defer restoreRandom()
-
-	response := requestName(t, "/api/v1/name-generator?gender=boy")
+	response := requestName(t, "/api/v1/name-generator?gender=boy", stubRandomIntn(t, 1))
 
 	if response.Name != "Noah" {
 		t.Fatalf("expected indexed boy name Noah, got %q", response.Name)
@@ -35,16 +32,13 @@ func TestNameGeneratorReturnsRequestedBoyName(t *testing.T) {
 	if response.Gender != "boy" {
 		t.Fatalf("expected gender boy, got %q", response.Gender)
 	}
-	if response.Total != len(boyNames) {
-		t.Fatalf("expected total %d, got %d", len(boyNames), response.Total)
+	if response.Total != len(defaultBoyNames) {
+		t.Fatalf("expected total %d, got %d", len(defaultBoyNames), response.Total)
 	}
 }
 
 func TestNameGeneratorReturnsRequestedGirlName(t *testing.T) {
-	restoreRandom := stubRandomIntn(t, 2)
-	defer restoreRandom()
-
-	response := requestName(t, "/api/v1/name-generator?gender=girl")
+	response := requestName(t, "/api/v1/name-generator?gender=girl", stubRandomIntn(t, 2))
 
 	if response.Name != "Charlotte" {
 		t.Fatalf("expected indexed girl name Charlotte, got %q", response.Name)
@@ -52,16 +46,13 @@ func TestNameGeneratorReturnsRequestedGirlName(t *testing.T) {
 	if response.Gender != "girl" {
 		t.Fatalf("expected gender girl, got %q", response.Gender)
 	}
-	if response.Total != len(girlNames) {
-		t.Fatalf("expected total %d, got %d", len(girlNames), response.Total)
+	if response.Total != len(defaultGirlNames) {
+		t.Fatalf("expected total %d, got %d", len(defaultGirlNames), response.Total)
 	}
 }
 
 func TestNameGeneratorRandomGenderUsesSelectedList(t *testing.T) {
-	restoreRandom := stubRandomIntn(t, len(boyNames)+3)
-	defer restoreRandom()
-
-	response := requestName(t, "/api/v1/name-generator")
+	response := requestName(t, "/api/v1/name-generator", stubRandomIntn(t, len(defaultBoyNames)+3))
 
 	if response.Name != "Amelia" {
 		t.Fatalf("expected indexed girl name Amelia, got %q", response.Name)
@@ -69,16 +60,13 @@ func TestNameGeneratorRandomGenderUsesSelectedList(t *testing.T) {
 	if response.Gender != "girl" {
 		t.Fatalf("expected gender girl, got %q", response.Gender)
 	}
-	if response.Total != len(girlNames) {
-		t.Fatalf("expected total %d, got %d", len(girlNames), response.Total)
+	if response.Total != len(defaultGirlNames) {
+		t.Fatalf("expected total %d, got %d", len(defaultGirlNames), response.Total)
 	}
 }
 
 func TestNameGeneratorRandomGenderCanReturnBoyName(t *testing.T) {
-	restoreRandom := stubRandomIntn(t, 4)
-	defer restoreRandom()
-
-	response := requestName(t, "/api/v1/name-generator")
+	response := requestName(t, "/api/v1/name-generator", stubRandomIntn(t, 4))
 
 	if response.Name != "William" {
 		t.Fatalf("expected indexed boy name William, got %q", response.Name)
@@ -86,18 +74,20 @@ func TestNameGeneratorRandomGenderCanReturnBoyName(t *testing.T) {
 	if response.Gender != "boy" {
 		t.Fatalf("expected gender boy, got %q", response.Gender)
 	}
-	if response.Total != len(boyNames) {
-		t.Fatalf("expected total %d, got %d", len(boyNames), response.Total)
+	if response.Total != len(defaultBoyNames) {
+		t.Fatalf("expected total %d, got %d", len(defaultBoyNames), response.Total)
 	}
 }
 
-func requestName(t *testing.T, target string) nameResponse {
+func requestName(t *testing.T, target string, random RandomFunc) NameResponse {
 	t.Helper()
 
 	request := httptest.NewRequest(http.MethodGet, target, nil)
 	response := httptest.NewRecorder()
+	service := NewNameService(defaultBoyNames, defaultGirlNames, random)
+	handlers := NewHandlers(service)
 
-	nameGenerator(response, request)
+	handlers.NameGenerator(response, request)
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
@@ -107,7 +97,7 @@ func requestName(t *testing.T, target string) nameResponse {
 		t.Fatalf("expected content type application/json, got %q", contentType)
 	}
 
-	var payload nameResponse
+	var payload NameResponse
 	if err := json.NewDecoder(response.Body).Decode(&payload); err != nil {
 		t.Fatalf("decode response: %v", err)
 	}
@@ -115,12 +105,11 @@ func requestName(t *testing.T, target string) nameResponse {
 	return payload
 }
 
-func stubRandomIntn(t *testing.T, values ...int) func() {
+func stubRandomIntn(t *testing.T, values ...int) RandomFunc {
 	t.Helper()
 
-	original := randomIntn
 	call := 0
-	randomIntn = func(n int) int {
+	return func(n int) int {
 		if call >= len(values) {
 			t.Fatalf("randomIntn called more than %d times", len(values))
 		}
@@ -134,15 +123,4 @@ func stubRandomIntn(t *testing.T, values ...int) func() {
 
 		return value
 	}
-
-	return func() {
-		randomIntn = original
-	}
-}
-
-type nameResponse struct {
-	Name    string `json:"name"`
-	Gender  string `json:"gender"`
-	Total   int    `json:"total"`
-	Message string `json:"message"`
 }
