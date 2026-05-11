@@ -1,0 +1,28 @@
+# Binaries
+frontend_server
+dist/*
+
+# Go workspace
+*.exe
+*.exe~
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Dependencies (optional - keep for deployment)
+# vendor/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

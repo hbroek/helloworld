@@ -1,0 +1,14 @@
+# Docker Compose for local deployment to Render
+version: '3.8'
+
+services:
+  helloworld:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PORT=4242
+    ports:
+      - "8080:4242"
+    volumes:
+      - ./backend:/app:ro
