@@ -85,6 +85,234 @@
       }
     });
   </script>
+<body>
+  <!-- Header Banner with Logo -->
+  <header class="header-banner" aria-label="Application Header">
+    <div class="logo-container">
+      <img src="/helloworld_logo.svg" alt="Hello World Logo" width="300" height="86">
+    </div>
+    <h1>Name Generator App</h1>
+  </header>
+
+  <!-- Main Greeting Section -->
+  <main class="main-content">
+    <section class="greeting-section" aria-labelledby="greeting-heading">
+      <h2 id="greeting-heading">Hello, <span id="greeting">world!</span>!</h2>
+      <p>Enter your name below or leave blank to get a random name:</p>
+      
+      <!-- Input and Button Container -->
+      <div class="input-container">
+        <input 
+          type="text" 
+          id="nameInput" 
+          name="name" 
+          placeholder="Enter your name" 
+          aria-label="Name input field" 
+          aria-describedby="name-hint"
+          autocomplete="name"
+        />
+        <button type="button" id="updateBtn" onclick="updateHello()">Click Me!</button>
+      </div>
+      
+      <!-- Help Text -->
+      <p id="name-hint" class="info-text">
+        Press <kbd>Enter</kbd> or click the button to update your name
+      </p>
+    </section>
+  </main>
+
+  <!-- JavaScript -->
+  <script>
+    // API configuration
+    const API_BASE = '/api/v1';
+    const nameAPI = `${API_BASE}/name-generator`;
+    
+    // Configuration
+    const CONFIG = {
+      MAX_NAME_LENGTH: 50,
+      VALID_NAME_PATTERN: /^[a-zA-Z\s\-']+$/',
+      TIMEOUT_MS: 10000,
+      RETRY_COUNT: 3
+    };
+    
+    // Toast notification system
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // Validate name input
+    function validateName(name) {
+      if (name === null || name === undefined) {
+        return 'Please enter a name';
+      }
+      
+      if (name.length === 0) {
+        return '';
+      }
+      
+      if (name.length > CONFIG.MAX_NAME_LENGTH) {
+        return `Name is too long (max ${CONFIG.MAX_NAME_LENGTH} characters)`;
+      }
+      
+      if (!CONFIG.VALID_NAME_PATTERN.test(name)) {
+        return 'Name contains invalid characters. Use only letters, spaces, hyphens, and apostrophes.';
+      }
+      
+      return '';
+    }
+    
+    // Get random name from API with retry logic
+    async function fetchRandomName(retry = 0) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT_MS);
+        
+        const response = await fetch(nameAPI, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Origin': window.location.origin
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const headers = response.headers;
+        const contentType = (headers.get('Content-Type') || '').split(';')[0];
+        
+        if (contentType !== 'application/json') {
+          throw new Error('Unexpected response content type');
+        }
+        
+        const data = await response.json(true);
+        
+        // Update UI with valid name
+        updateGreeting(data.name, false);
+        
+      } catch (error) {
+        console.error(`Fetch error (${retry + 1}/${CONFIG.RETRY_COUNT}):`, error);
+        
+        if (retry < CONFIG.RETRY_COUNT) {
+          showToast('Retrying...', 'info');
+          setTimeout(() => fetchRandomName(retry + 1), 1000 * (retry + 1));
+        } else {
+          showToast(`Failed to fetch name: ${error.message}`, 'error');
+          showToast('Make sure you\'re not blocked by CORS restrictions.', 'error');
+        }
+      }
+    }
+    
+    // Main function - validate input, call API if needed
+    function updateHello() {
+      const nameInput = document.getElementById('nameInput');
+      const name = nameInput.value.trim();
+      const updateBtn = document.getElementById('updateBtn');
+      
+      // Clear previous error
+      nameInput.classList.remove('error');
+      nameInput.setAttribute('aria-invalid', 'false');
+      updateBtn.classList.remove('error');
+      
+      // Validate input
+      const validationError = validateName(name);
+      
+      if (validationError) {
+        // Show error
+        nameInput.classList.add('error');
+        nameInput.setAttribute('aria-invalid', 'true');
+        updateBtn.classList.add('error');
+        showToast(validationError, 'error');
+        return;
+      }
+      
+      // Update button state
+      updateBtn.textContent = 'Updating...';
+      updateBtn.disabled = true;
+      
+      // Fetch name if empty, otherwise update with provided name
+      if (name === '' || !name) {
+        fetchRandomName();
+      } else {
+        updateGreeting(name, true);
+      }
+    }
+    
+    // Update greeting display
+    function updateGreeting(name, useAnimation) {
+      const greetingSpan = document.querySelector('span#greeting');
+      const nameElement = document.querySelector('#nameInput');
+      const h1 = document.querySelector('h1');
+      
+      // Apply animation
+      if (useAnimation) {
+        nameElement.classList.add('name-update');
+        h1.classList.add('name-update');
+        greetingSpan.classList.add('name-update');
+        
+        setTimeout(() => {
+          nameElement.classList.remove('name-update');
+          h1.classList.remove('name-update');
+          greetingSpan.classList.remove('name-update');
+        }, 300);
+      }
+      
+      // Update content
+      nameElement.value = name;
+      greetingSpan.textContent = name;
+      h1.textContent = `Hello, "${name}"`;
+      
+      // Show success toast
+      showToast(`Name updated to ${name}`, 'success');
+    }
+    
+    // Allow Enter key to trigger update
+    const nameInput = document.getElementById('nameInput');
+    const updateBtn = document.getElementById('updateBtn');
+    
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault(); // Prevent form submission if in a form
+        updateHello();
+      }
+    }
+    
+    // Initial validation check
+    function validateOnFocus() {
+      const name = nameInput.value;
+      const errorMsg = validateName(name);
+      if (errorMsg.includes('invalid')) {
+        showToast('Use only letters, spaces, hyphens, and apostrophes', 'error');
+      }
+    }
+    
+    // Event listeners
+    if (nameInput) {
+      nameInput.addEventListener('keypress', handleKeyPress);
+      nameInput.addEventListener('blur', validateOnFocus);
+      nameInput.addEventListener('input', (e) => {
+        // Real-time validation
+        const name = e.target.value.trim();
+        if (CONFIG.MAX_NAME_LENGTH && name.length > CONFIG.MAX_NAME_LENGTH - 5) {
+          showToast(`Max ${CONFIG.MAX_NAME_LENGTH} characters`, 'info');
+        }
+      });
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      showToast('Welcome to the Name Generator!', 'info');
+    });
+  </script>
 </body>
 
 </html>

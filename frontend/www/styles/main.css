@@ -1,0 +1,381 @@
+/*
+ * Hello World Name Generator - Main Styles
+ * Modern, responsive design with good UX
+ */
+
+:root {
+  /* Primary Colors */
+  --primary-color: #2E75B6;
+  --primary-dark: #1e5a96;
+  --primary-light: #3e91d6;
+  
+  /* Secondary Colors */
+  --secondary-color: #ED8936;
+  --secondary-dark: #c96d28;
+  --secondary-light: #ff9e4e;
+  
+  /* Neutral Colors */
+  --text-color: #333;
+  --text-light: #666;
+  --text-muted: #999;
+  --border-color: #ddd;
+  
+  /* Background Colors */
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-hover: #f9f9f9;
+  
+  /* Shadow Colors */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+  --shadow-lg: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+/* Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Container */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  flex: 1;
+}
+
+/* Header Section */
+.header-banner {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  padding: 2rem 1rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-banner h1 {
+  color: white;
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 1px;
+  text-shadow: var(--shadow-sm);
+}
+
+.logo-container {
+  margin: 0 auto 1rem auto;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  display: inline-block;
+}
+
+.logo-container:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Greeting Section */
+.greeting-section {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 1.5rem;
+}
+
+.greeting-section h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.greeting-section span {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Input Section */
+.input-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+  justify-content: center;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+#nameInput {
+  flex: 1;
+  min-width: 280px;
+  max-width: 500px;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+  background: var(--bg-secondary);
+}
+
+#nameInput::placeholder {
+  color: var(--text-muted);
+}
+
+#nameInput:focus {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-sm), 0 0 0 3px rgba(46, 117, 182, 0.1);
+  background: white;
+}
+
+#nameInput:valid:not(:placeholder-shown) {
+  border-color: var(--primary-light);
+}
+
+#nameInput.error {
+  border-color: #e74c3c;
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Button Styling */
+button {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.875rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, #ff9e4e 0%, var(--secondary-color) 100%);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button.success {
+  background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+}
+
+button.error {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+/* Info Text */
+.info-text {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: var(--bg-primary);
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Loading Spinner */
+.spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Main Content Container */
+.main-content {
+  padding: 2rem 1rem;
+}
+
+/* Footer */
+.footer {
+  background: var(--text-color);
+  color: white;
+  padding: 1.5rem;
+  text-align: center;
+  margin-top: auto;
+}
+
+.footer a {
+  color: var(--primary-light);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+  font-weight: 500;
+}
+
+.toast.success {
+  background: #27ae60;
+  color: white;
+}
+
+.toast.error {
+  background: #e74c3c;
+  color: white;
+}
+
+.toast.info {
+  background: var(--primary-color);
+  color: white;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .header-banner {
+    padding: 1.5rem 1rem;
+  }
+  
+  .header-banner h1 {
+    font-size: 1.5rem;
+  }
+  
+  .input-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  #nameInput {
+    min-width: 100%;
+    max-width: none;
+  }
+  
+  button {
+    width: 100%;
+  }
+  
+  .toast {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .main-content {
+    padding: 1.5rem 1rem;
+  }
+  
+  .greeting-section h2 {
+    font-size: 1.25rem;
+  }
+  
+  .info-text {
+    font-size: 0.75rem;
+  }
+}
+
+/* Animation for name update */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.name-update {
+  animation: pulse 0.3s ease;
+}
+
+/* Gradient background pattern */
+.bg-pattern {
+  background-image: 
+    radial-gradient(circle at 1px 1px, var(--border-color) 1px, transparent 0);
+  background-size: 20px 20px;
+  opacity: 0.1;
+}
+
+/* Card styling for better layout */
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
