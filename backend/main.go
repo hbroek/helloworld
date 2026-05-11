@@ -24,3 +24,11 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
+// Helper function for CORS enabled status
+func hasCorsEnabled() bool {
+	if corsEnabled := os.Getenv("CORS_ENABLED"); corsEnabled != "" {
+		return corsEnabled == "true"
+	}
+	return true // Default to enabled
+}
